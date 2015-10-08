@@ -88,7 +88,7 @@ class Arbiter(object):
                  ssh_server=None, proc_name='circusd', pidfile=None,
                  loglevel=None, logoutput=None, loggerconfig=None,
                  fqdn_prefix=None, umask=None, endpoint_owner=None,
-                 papa_endpoint=None):
+                 papa_endpoint=None, command_blacklist=None):
 
         self.watchers = watchers
         self.endpoint = endpoint
@@ -105,6 +105,7 @@ class Arbiter(object):
         self.loggerconfig = loggerconfig
         self.umask = umask
         self.endpoint_owner = endpoint_owner
+        self.command_blacklist = (command_blacklist or [])
         self._running = False
         try:
             # getfqdn appears to fail in Python3.3 in the unittest
@@ -461,7 +462,8 @@ class Arbiter(object):
                       loggerconfig=cfg.get('loggerconfig', None),
                       fqdn_prefix=cfg.get('fqdn_prefix', None),
                       umask=cfg['umask'],
-                      endpoint_owner=cfg.get('endpoint_owner', None))
+                      endpoint_owner=cfg.get('endpoint_owner', None),
+                      command_blacklist=cfg.get('command_blacklist', None))
 
         # store the cfg which will be used, so it can be used later
         # for checking if the cfg has been changed
@@ -697,6 +699,11 @@ class Arbiter(object):
     def statuses(self):
         return dict([(watcher.name, watcher.status())
                      for watcher in self.watchers])
+
+    def is_command_permitted(self, cmd):
+        if cmd.name in self.command_blacklist:
+            return False
+        return True
 
     @synchronized("arbiter_add_watcher")
     def add_watcher(self, name, cmd, **kw):

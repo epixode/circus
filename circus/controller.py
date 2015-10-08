@@ -197,6 +197,11 @@ class Controller(object):
             return self.send_error(mid, cid, msg, error_, cast=cast,
                                    errno=errors.UNKNOWN_COMMAND)
 
+        if not self.arbiter.is_command_permitted(cmd):
+            error_ = "forbidden: %r" % cmd_name
+            return self.send_error(mid, cid, msg, error_, cast=cast,
+                                   errno=errors.UNKNOWN_COMMAND)
+
         try:
             cmd.validate(properties)
             resp = cmd.execute(self.arbiter, properties)

@@ -44,7 +44,8 @@ def watcher_defaults():
         'hooks': dict(),
         'respawn': True,
         'autostart': True,
-        'use_papa': False}
+        'use_papa': False,
+        'command_blacklist': list()}
 
 
 class DefaultConfigParser(StrictConfigParser):
@@ -161,6 +162,9 @@ def get_config(config_file):
     config['umask'] = dget('circus', 'umask', None)
     if config['umask']:
         config['umask'] = int(config['umask'], 8)
+    config['command_blacklist'] = dget('circus', 'command_blacklist', None)
+    if config['command_blacklist']:
+        config['command_blacklist'] = config['command_blacklist'].split()
 
     if config['stats_endpoint'] is None:
         config['stats_endpoint'] = DEFAULT_ENDPOINT_STATS
